@@ -62,12 +62,20 @@ def move_shooter():
 def spawn_bullet_yellow():
     global yellow_bullets
     bullet = pygame.rect.Rect(yellow_rect.x+30,yellow_rect.y+30,7,4)
-    yellow_bullets.append(bullet)
+    if len(yellow_bullets) <= 2:
+        yellow_bullets.append(bullet)
+    for bullet in yellow_bullets:
+        if bullet.x >= WIDTH:
+            yellow_bullets.remove(bullet)
 
 def spawn_bullet_red():
     global red_bullets
     bullet = pygame.rect.Rect(red_rect.x+30,red_rect.y+30,7,4)
-    red_bullets.append(bullet)
+    if len(red_bullets) <= 2:
+        red_bullets.append(bullet)
+    for bullet in red_bullets:
+        if bullet.x <= 0:
+            red_bullets.remove(bullet)
 
 def bullet_collision_check():
     global yellow_health
