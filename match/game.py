@@ -19,6 +19,7 @@ score = 0
 y = 20
 image_dict = {}
 text_dict = {}
+score_rect = pygame.rect.Rect(WIDTH/4,20,100,50)
 
 score_text = font.render("Score: " + str(score), True, "white")
 screen.blit(score_text, (WIDTH/4, 20))
@@ -68,6 +69,9 @@ while True:
                     text_dict.get(k)[1] = True
                     if k == image_name:
                         score += 1
+                        pygame.draw.rect(screen, "black", score_rect)
+                        score_text = font.render("Score: " + str(score), True, "white")
+                        screen.blit(score_text, (WIDTH/4, 20))
                         print(score)
                     
             print(pygame.mouse.get_pos())
