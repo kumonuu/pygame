@@ -1,5 +1,7 @@
 import pygame
 import sys
+import random
+import time
 
 WIDTH = 864
 HEIGHT = 768
@@ -14,7 +16,8 @@ bird_images = ["flappy_bird/bird1.png", "flappy_bird/bird2.png", "flappy_bird/bi
 count = 0
 tapped = False
 game_over = False
-pipe_gap = 40
+pipe_gap = 70
+pipe_passed = False
 
 class BirdSprite(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -60,47 +63,63 @@ class PipeSprite(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.x = x
         self.y = y
+        print(self.x)
+        print(self.y)
         self.image = pygame.image.load("flappy_bird/pipe.png")
         self.rect = self.image.get_rect()
         if direction == True:
-            self.rect.topleft = (x,y+50)
+            self.rect.topleft = (x,y+pipe_gap)
         else:
             self.image = pygame.transform.flip(self.image,False,True)
-            self.rect.bottomleft = (x,y-50)
+            self.rect.bottomleft = (x,y-pipe_gap)
     def update(self):
-        pass
+        self.rect.x -= 1
     
 bird_sprite = BirdSprite(200,HEIGHT/2)
-
-
 group_bird = pygame.sprite.Group()
 group_bird.add(bird_sprite)
 
 group_pipe = pygame.sprite.Group()
-group_pipe.add(pipe_sprite)
-group_pipe.add(pipe_sprite2)
+
 
 x = 0
 bg = pygame.image.load("flappy_bird/bg.png")
 ground = pygame.image.load("flappy_bird/ground.png")
 
+start_time = time.time()
 while True:
     screen.blit(bg, (0,0))
     group_pipe.draw(screen)
-    group_pipe.update()
     screen.blit(ground, (x,700))
 
-    pipe_height = 50 # replace with random
-    pipe_sprite = PipeSprite(400,200,True)
-    pipe_sprite2 = PipeSprite(400,200,False)
-    
-    x -= 1
-    if x <= -38:
-        x = 0
+    if tapped and game_over == False:
+        x -= 1
+        if x <= -38:
+            x = 0
+        current_time = time.time()
+        if current_time - start_time >= 2:
+            random_height = random.randint(-150,150)
+            pipe_sprite = PipeSprite(WIDTH,200+random_height,True)
+            pipe_sprite2 = PipeSprite(WIDTH,200+random_height,False)
+
+            group_pipe.add(pipe_sprite)
+            group_pipe.add(pipe_sprite2)
+            start_time = current_time
+        group_pipe.update()
+
+    if len(group_pipe) > 0:
+        if group_pipe.sprites()[0].rect.left <= group_bird.sprites()[0].rect.left and group_pipe.sprites()[0].rect.right >= group_bird.sprites()[0].rect.right and pipe_passed == False:
+            pipe_passed = True
+        if group_pipe.sprites()[0].rect.right < group_bird.sprites()[0].rect.left and pipe_passed == True:
+            print("pipe crossed")
+            pipe_passed = False
+
+    if pygame.sprite.groupcollide(group_bird,group_pipe,False,False) or bird_sprite.rect.y > 680 or bird_sprite.rect.y <= 0:
+        game_over = True
+
+
     group_bird.draw(screen)
     group_bird.update()
-    if bird_sprite.rect.y > 680 or bird_sprite.rect.y <= 0:
-        game_over = True
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
