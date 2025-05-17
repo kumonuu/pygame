@@ -6,18 +6,23 @@ import time
 WIDTH = 864
 HEIGHT = 768
 
+pygame.init()
+
 # make screen
 screen = pygame.display.set_mode((WIDTH,HEIGHT))
 
 #make title
 pygame.display.set_caption("Flappy Bird")
 
+font = pygame.font.SysFont("Comic Sans", 30, False, False)
 bird_images = ["flappy_bird/bird1.png", "flappy_bird/bird2.png", "flappy_bird/bird3.png"]
 count = 0
 tapped = False
 game_over = False
-pipe_gap = 70
+pipe_gap = 100
 pipe_passed = False
+score = 0
+clicked_button = False
 
 class BirdSprite(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -58,13 +63,12 @@ class BirdSprite(pygame.sprite.Sprite):
                 self.click = True
             elif pygame.mouse.get_pressed()[0] == False:
                 self.click = False
+
 class PipeSprite(pygame.sprite.Sprite):
     def __init__(self,x,y,direction):
         pygame.sprite.Sprite.__init__(self)
         self.x = x
         self.y = y
-        print(self.x)
-        print(self.y)
         self.image = pygame.image.load("flappy_bird/pipe.png")
         self.rect = self.image.get_rect()
         if direction == True:
@@ -74,13 +78,42 @@ class PipeSprite(pygame.sprite.Sprite):
             self.rect.bottomleft = (x,y-pipe_gap)
     def update(self):
         self.rect.x -= 1
+        if self.rect.x <= -40:
+            self.kill()
     
+class RestartButtonSprite(pygame.sprite.Sprite):
+    def __init__(self,x,y):
+        pygame.sprite.Sprite.__init__(self)
+        self.x = x
+        self.y = y
+        self.image = pygame.image.load("flappy_bird/restart.png")
+        self.rect = self.image.get_rect()
+    def draw(self):
+        global clicked_button
+        screen.blit(self.image, (self.x,self.y))
+        pos = pygame.mouse.get_pos()
+        print(pos)
+        if self.rect.collidepoint(pos):
+            restart()
+            clicked_button = True
+            print("game restarted")
+        return clicked_button
+
+def restart():
+    global tapped, game_over, score
+    #tapped = False
+    #game_over = False
+    score = 0
+    bird_sprite.x = 200
+    bird_sprite.y = HEIGHT/2
+
 bird_sprite = BirdSprite(200,HEIGHT/2)
 group_bird = pygame.sprite.Group()
 group_bird.add(bird_sprite)
 
 group_pipe = pygame.sprite.Group()
 
+restart_button = RestartButtonSprite(WIDTH/2-50,HEIGHT/2-50)
 
 x = 0
 bg = pygame.image.load("flappy_bird/bg.png")
@@ -91,6 +124,8 @@ while True:
     screen.blit(bg, (0,0))
     group_pipe.draw(screen)
     screen.blit(ground, (x,700))
+    score_text = font.render(str(score), False, "black")
+    screen.blit(score_text, (750,650))
 
     if tapped and game_over == False:
         x -= 1
@@ -110,13 +145,21 @@ while True:
     if len(group_pipe) > 0:
         if group_pipe.sprites()[0].rect.left <= group_bird.sprites()[0].rect.left and group_pipe.sprites()[0].rect.right >= group_bird.sprites()[0].rect.right and pipe_passed == False:
             pipe_passed = True
+            if pipe_passed:
+                score += 1
+                print(score)
         if group_pipe.sprites()[0].rect.right < group_bird.sprites()[0].rect.left and pipe_passed == True:
-            print("pipe crossed")
             pipe_passed = False
+            print(pipe_passed)
 
     if pygame.sprite.groupcollide(group_bird,group_pipe,False,False) or bird_sprite.rect.y > 680 or bird_sprite.rect.y <= 0:
         game_over = True
-
+    
+    print(game_over)
+    if game_over == True and restart_button.draw() == True:
+        game_over = False
+        print(game_over)
+        
 
     group_bird.draw(screen)
     group_bird.update()
