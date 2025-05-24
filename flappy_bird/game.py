@@ -19,7 +19,7 @@ bird_images = ["flappy_bird/bird1.png", "flappy_bird/bird2.png", "flappy_bird/bi
 count = 0
 tapped = False
 game_over = False
-pipe_gap = 100
+pipe_gap = 90
 pipe_passed = False
 score = 0
 
@@ -34,7 +34,7 @@ class BirdSprite(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
-        self.rect.center = (x,y)
+        self.rect.center = (self.x,self.y)
         self.velocity = 0
         self.click = False
     def update(self):
@@ -102,9 +102,10 @@ def restart():
     tapped = False
     game_over = False
     score = 0
-    bird_sprite.x = 200
-    bird_sprite.y = HEIGHT/2
+    bird_sprite.rect.x = 200
+    bird_sprite.rect.y = HEIGHT/2
     group_pipe.empty()
+    bird_sprite.image = pygame.image.load("flappy_bird/bird1.png")
     print("game restarted")
 
 bird_sprite = BirdSprite(200,HEIGHT/2)
