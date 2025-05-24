@@ -22,7 +22,6 @@ game_over = False
 pipe_gap = 100
 pipe_passed = False
 score = 0
-clicked_button = False
 
 class BirdSprite(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -88,24 +87,25 @@ class RestartButtonSprite(pygame.sprite.Sprite):
         self.y = y
         self.image = pygame.image.load("flappy_bird/restart.png")
         self.rect = self.image.get_rect()
+        self.rect.topleft = (self.x,self.y)
     def draw(self):
-        global clicked_button
-        screen.blit(self.image, (self.x,self.y))
+        clicked_button = False
+        screen.blit(self.image, (self.rect.x,self.rect.y))
         pos = pygame.mouse.get_pos()
-        print(pos)
         if self.rect.collidepoint(pos):
-            restart()
-            clicked_button = True
-            print("game restarted")
+            if pygame.mouse.get_pressed()[0]:
+                clicked_button = True
         return clicked_button
 
 def restart():
     global tapped, game_over, score
-    #tapped = False
-    #game_over = False
+    tapped = False
+    game_over = False
     score = 0
     bird_sprite.x = 200
     bird_sprite.y = HEIGHT/2
+    group_pipe.empty()
+    print("game restarted")
 
 bird_sprite = BirdSprite(200,HEIGHT/2)
 group_bird = pygame.sprite.Group()
@@ -147,20 +147,17 @@ while True:
             pipe_passed = True
             if pipe_passed:
                 score += 1
-                print(score)
         if group_pipe.sprites()[0].rect.right < group_bird.sprites()[0].rect.left and pipe_passed == True:
             pipe_passed = False
-            print(pipe_passed)
 
     if pygame.sprite.groupcollide(group_bird,group_pipe,False,False) or bird_sprite.rect.y > 680 or bird_sprite.rect.y <= 0:
         game_over = True
     
-    print(game_over)
-    if game_over == True and restart_button.draw() == True:
-        game_over = False
-        print(game_over)
+    if game_over == True:
+        if restart_button.draw() == True:
+            print("restart button drawn")
+            restart()
         
-
     group_bird.draw(screen)
     group_bird.update()
     for event in pygame.event.get():
